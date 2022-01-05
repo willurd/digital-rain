@@ -1,0 +1,14 @@
+@font-face {
+  font-family: "matrix-code-nfi";
+  src: url("/assets/fonts/matrix-code-nfi/matrix-code-nfi.ttf")
+    format("truetype");
+}
+
+body {
+  background: black;
+  color: #00ff41;
+  font-family: "matrix-code-nfi";
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
