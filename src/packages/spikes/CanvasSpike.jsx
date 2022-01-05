@@ -4,7 +4,7 @@ const CHARS = [
   "abcdefghijklmnopqrstuvwxyz",
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
   "0123456789",
-  "`~!#$%^&*()+-_=[]{}'\";:,.<>/?\\|"
+  "~!#$%^&*()+-_=[]{}'\";:,.<>/?\\|"
 ]
   .join("")
   .split("");
@@ -44,14 +44,27 @@ class DigitalRain extends GameEngine {
     super.update(delta);
   }
 
+  // ctx.measureText
   render(ctx) {
     super.render(ctx);
 
     // font color: #00e600 (has a glow, fades to 0 opacity)
-    ctx.font = "12px digital-rain";
+    const fontSize = 24;
+    const font = "matrix-code-nfi";
+    ctx.font = `${fontSize}px ${font}`;
+    ctx.fillStyle = "#00e600";
+    ctx.shadowColor = "#00ff00";
+    ctx.shadowBlur = 14;
 
-    for (let i = 0; i < 10; i++) {
-      ctx.fillText(CHARS[i * 5], 10, 10 * (i + 1));
+    const len = 10;
+    for (let i = 0; i <= len; i++) {
+      if (i === len) {
+        ctx.fillStyle = "#f4f7f4";
+        ctx.shadowColor = "#f4f7f4";
+        ctx.shadowBlur = 20;
+      }
+
+      ctx.fillText(CHARS[i * 7 + 20], 12, fontSize * (i + 1) + 6);
     }
   }
 }

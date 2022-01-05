@@ -46,6 +46,7 @@ export class GameEngine {
 
   render(ctx) {
     this.clear(ctx);
+    ctx.restore();
   }
 
   clear(ctx) {
