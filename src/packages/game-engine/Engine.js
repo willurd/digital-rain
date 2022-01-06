@@ -22,12 +22,21 @@ export class Engine {
     this.onWindowResize();
   };
 
+  getCanvas() {
+    return this.canvas;
+  }
+
+  getGameState() {
+    return this.gameState;
+  }
+
   initialize() {
     this.isPlaying = false;
     this.lastTime = undefined;
   }
 
   start() {
+    this.initialize();
     this.isPlaying = true;
     this.nextFrame();
   }
