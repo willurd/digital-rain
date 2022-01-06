@@ -1,5 +1,4 @@
 import Engine from "../game-engine/Engine";
-import Game from "../game-engine/Game";
 
 const CHARS = [
   "abcdefghijklmnopqrstuvwxyz",
@@ -10,7 +9,7 @@ const CHARS = [
   .join("")
   .split("");
 
-class DigitalRain extends Engine {
+export class DigitalRainAnimation extends Engine {
   constructor(canvas) {
     super(canvas);
 
@@ -52,8 +51,4 @@ class DigitalRain extends Engine {
   }
 }
 
-export const CanvasSpike = () => {
-  return <Game createGame={(canvas) => new DigitalRain(canvas)} />;
-};
-
-export default CanvasSpike;
+export default DigitalRainAnimation;

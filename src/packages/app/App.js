@@ -1,10 +1,10 @@
-import CanvasSpike from "../../spikes/CanvasSpike";
+import DigitalRainCanvas from "../digital-rain/DigitalRainCanvas";
 import "./styles.css";
 
 export default function App() {
   return (
     <div>
-      <CanvasSpike />
+      <DigitalRainCanvas />
     </div>
   );
 }
