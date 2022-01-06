@@ -15,7 +15,7 @@ export class Entity {
     //
   }
 
-  render(ctx, canvas) {
+  render(ctx, game) {
     //
   }
 }

@@ -13,39 +13,17 @@ const CHARS = [
 
 const choose = (arr) => arr[random.int(0, arr.length - 1)];
 
-// TODO: Use this class.
-class Glyph extends Entity {
-  constructor() {
-    super();
-    this.isHotSwappable = random.float() < 0.1;
-  }
-
-  update(delta, game) {
-    super.update(delta, game);
-
-    // TODO
-  }
-
-  render(ctx, canvas) {
-    super.render(ctx, canvas);
-
-    // TODO
-  }
-}
-
 class Stream extends Entity {
-  constructor(column, renderCount = 1) {
+  constructor(game, column) {
     super();
     this.column = column;
-    this.renderCount = renderCount;
     this.glyphs = [];
     this.newGlyphsPerSecond = 10;
     this.timeBetweenGlyphs = 1000 / this.newGlyphsPerSecond;
-    // position increases by 1 every time a glyph fades away.
     this.startingRow = 0;
-    this.maxStartingRow = 24;
+    this.maxStartingRow = game.rows + 1;
     this.timeUntilNextGlyph = 0;
-    this.fadeDuration = 8;
+    this.fadeDuration = random.int(5, 8);
     // TODO: This should be based on the max rows of the screen.
     this.length = random.int(14, 19);
   }
@@ -71,8 +49,9 @@ class Stream extends Entity {
     }
   }
 
-  render(ctx, canvas) {
-    super.render(ctx, canvas);
+  render(ctx, game) {
+    super.render(ctx, game);
+    const s = game.getGameState();
 
     // glyphs fade to 0 opacity over time
     const fontSize = 24;
@@ -82,6 +61,14 @@ class Stream extends Entity {
     ctx.shadowBlur = 14;
 
     for (let i = 0, len = this.glyphs.length; i < len; i++) {
+      const cellKey = `${this.startingRow + i}:${this.column}`;
+
+      if (s.cellsRendered.has(cellKey)) {
+        continue;
+      }
+
+      s.cellsRendered.add(cellKey);
+
       const remainingLength = this.length - this.glyphs.length;
       const distanceToDestruction = remainingLength + i;
       const opacity = distanceToDestruction / this.fadeDuration;
@@ -93,11 +80,9 @@ class Stream extends Entity {
         ctx.shadowBlur = 20;
       }
 
-      ctx.fillText(
-        this.glyphs[i],
-        this.column * 15 + 12,
-        fontSize * (i + this.startingRow + 1) + 6
-      );
+      const x = this.column * 15 + 12;
+      const y = fontSize * (i + this.startingRow + 1) + 6;
+      ctx.fillText(this.glyphs[i], x, y);
     }
   }
 }
@@ -106,50 +91,100 @@ export class DigitalRainAnimation extends Engine {
   constructor(canvas) {
     super(canvas);
     canvas.style.backgroundColor = "#000300";
+
+    window.addEventListener("keydown", this.handleKeyDown);
+  }
+
+  destroy() {
+    super.destroy();
+    window.removeEventListener("keydown", this.handleKeyDown);
+  }
+
+  handleKeyDown = (event) => {
+    const s = this.getGameState();
+
+    // eslint-disable-next-line default-case
+    switch (event.code) {
+      case "Space": {
+        s.isPaused = !s.isPaused;
+        break;
+      }
+
+      case "ArrowDown": {
+        s.isSlowMotion = !s.isSlowMotion;
+        break;
+      }
+    }
+  };
+
+  onWindowResize() {
+    // TODO: These should be based on the canvas dimensions and the font size.
+    this.rows = 24;
+    this.columns = 53;
   }
 
   initialize() {
     super.initialize();
 
-    const gameState = this.getGameState();
-    gameState.density = 0.7;
-    gameState.streams = [];
+    const s = this.getGameState();
+    s.isPaused = false;
+    s.isSlowMotion = false;
+    s.slowMotionFactor = 5;
+    s.density = 0.7;
+    s.streams = [];
   }
 
   update(delta) {
+    const s = this.getGameState();
+
+    if (s.isPaused) {
+      return;
+    } else if (s.isSlowMotion) {
+      delta = delta / s.slowMotionFactor;
+    }
+
     super.update(delta);
-    const gameState = this.getGameState();
 
-    gameState.streams = gameState.streams.filter((s) => !s.shouldBeRemoved);
+    s.streams = s.streams.filter((s) => !s.shouldBeRemoved);
 
-    if (gameState.streams.length === 0) {
-      for (let i = 0; i <= 52; i++) {
-        const delay = Math.random() * 1500;
-        const add = () => {
-          gameState.streams.push(new Stream(i));
-        };
+    const glyphWaitCount = 12 - 8 * this.density;
 
-        if (delay < 100) {
-          add();
-        } else {
-          setTimeout(add, delay);
+    if (Math.random() < 0.3 / (s.isSlowMotion ? s.slowMotionFactor : 1)) {
+      let column;
+      let maxIterations = 100;
+      let i = 0;
+      let giveUp = false;
+
+      do {
+        column = random.int(0, this.columns - 1);
+        i++;
+
+        if (i > maxIterations) {
+          giveUp = true;
         }
+      } while (
+        s.streams.find(
+          (s) => s.column === column && s.glyphs.length < glyphWaitCount
+        )
+      );
+
+      if (!giveUp) {
+        s.streams.push(new Stream(this, column));
       }
     }
 
-    gameState.streams.forEach((s) => s.update(delta, this));
+    s.streams.forEach((s) => s.update(delta, this));
   }
 
   // ctx.measureText
   render(ctx) {
     super.render(ctx);
-    const gameState = this.getGameState();
+    const s = this.getGameState();
+    s.cellsRendered = new Set();
 
-    gameState.streams.forEach((s) => {
-      for (let i = 0; i < s.renderCount; i++) {
-        s.render(ctx, this.canvas);
-      }
-    });
+    for (let i = s.streams.length - 1; i >= 0; i--) {
+      s.streams[i].render(ctx, this);
+    }
   }
 }
 
