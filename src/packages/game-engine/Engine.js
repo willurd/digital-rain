@@ -1,15 +1,26 @@
-import { useEffect, useRef } from "react";
-
-export class GameEngine {
+export class Engine {
   constructor(canvas) {
     this.canvas = canvas;
+    this.gameState = {};
+    window.addEventListener("resize", this.handleWindowResize);
+    this.handleWindowResize();
   }
 
   destroy() {
+    window.removeEventListener("resize", this.handleWindowResize);
+
     if (this.isPlaying) {
       this.stop();
     }
   }
+
+  handleWindowResize = () => {
+    this.width = window.innerWidth || document.body.clientWidth;
+    this.height = window.innerHeight || document.body.clientHeight;
+    this.canvas.width = this.width;
+    this.canvas.height = this.height;
+    this.onWindowResize();
+  };
 
   initialize() {
     this.isPlaying = false;
@@ -31,7 +42,7 @@ export class GameEngine {
     }
 
     const now = Date.now();
-    const delta = now - (this.lastTime === undefined ? now : this.lastTime);
+    const delta = now - (this.lastTime || now);
     this.lastTime = now;
 
     this.update(delta);
@@ -39,6 +50,10 @@ export class GameEngine {
 
     requestAnimationFrame(this.nextFrame);
   };
+
+  onWindowResize() {
+    //
+  }
 
   update(delta) {
     // TODO: Render a stats/fps display if enabled.
@@ -54,21 +69,4 @@ export class GameEngine {
   }
 }
 
-export const Game = ({ createGame }) => {
-  const canvasRef = useRef();
-
-  useEffect(() => {
-    if (!canvasRef.current) {
-      return;
-    }
-
-    const game = createGame(canvasRef.current);
-    game.start();
-
-    return () => game.destroy();
-  }, [canvasRef, createGame]);
-
-  return <canvas ref={canvasRef} />;
-};
-
-export default Game;
+export default Engine;
