@@ -20,7 +20,10 @@ export class Stream extends Entity {
     this.fadeDuration = random.int(5, 8);
     // TODO: This should be based on the max rows of the screen.
     // Something like (floor(maxRows*0.5), floor(maxRows*0.8))
-    this.length = random.int(14, 19);
+    this.length = random.int(
+      Math.floor(game.rows * 0.5),
+      Math.floor(game.rows * 0.8)
+    ); // random.int(14, 19);
     this.swapperConfigs = new Map();
   }
 
@@ -74,15 +77,23 @@ export class Stream extends Entity {
   render(ctx, game) {
     super.render(ctx, game);
     const s = game.getGameState();
+    const g = game.grid;
 
-    const fontSize = 24;
     const font = "matrix-code-nfi";
-    ctx.font = `${fontSize}px ${font}`;
+    ctx.font = `${g.glyph.fontSize}px ${font}`;
     ctx.shadowColor = "#00ff00";
     ctx.shadowBlur = 14;
 
+    ctx.textAlign = "left";
+    ctx.textBaseline = "center";
+
     for (let i = 0, len = this.glyphs.length; i < len; i++) {
       const row = this.startingRow + i;
+
+      if (row >= game.rows) {
+        break;
+      }
+
       const cellKey = createCellKey(row, this.column);
 
       if (s.cellsRendered.has(cellKey)) {
@@ -90,6 +101,27 @@ export class Stream extends Entity {
       }
 
       s.cellsRendered.add(cellKey);
+
+      // NOTE: This masks a circle.
+      // const cx = 26;
+      // const cy = 12;
+      // const radius = 6;
+      // const distance = Math.sqrt(
+      //   Math.pow(row - cy, 2) + Math.pow((this.column + 14) / 1.5 - cx, 2)
+      // );
+
+      // if (distance <= radius && distance >= radius - 1) {
+      //   continue;
+      // }
+
+      // NOTE: This masks a rectangle.
+      // if (
+      //   row === 5 ||
+      //   row === 19 ||
+      //   (row >= 5 && row <= 19 && (this.column === 10 || this.column === 42))
+      // ) {
+      //   continue;
+      // }
 
       const remainingLength = this.length - this.glyphs.length;
       const distanceToDestruction = remainingLength + i;
@@ -102,8 +134,12 @@ export class Stream extends Entity {
         ctx.shadowBlur = 20;
       }
 
-      const x = this.column * 15 + 12;
-      const y = fontSize * (i + this.startingRow + 1) + 6;
+      const x =
+        this.column * 15 + g.margin.horizontal + g.glyph.cellOffset.horizontal;
+      const y =
+        g.glyph.fontSize * row +
+        g.margin.vertical +
+        g.glyph.cellOffset.vertical;
       ctx.fillText(this.glyphs[i], x, y);
     }
   }
