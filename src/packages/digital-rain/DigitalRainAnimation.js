@@ -118,7 +118,7 @@ export class DigitalRainAnimation extends Engine {
 
     if (
       Math.random() <=
-      (0.2 + 0.2 * s.density) / (s.isSlowMotion ? s.slowMotionFactor : 1)
+      (0.05 + 0.8 * s.density) / (s.isSlowMotion ? s.slowMotionFactor : 1)
     ) {
       // Add a new stream.
       let column;
