@@ -1,12 +1,15 @@
 import Engine from "../game-engine/Engine";
 import random from "random";
 import Stream from "./Stream";
+import { createMaskFromImageSource } from "../image-processing/mask";
+import { debounce } from "lodash";
 
 export class DigitalRainAnimation extends Engine {
   constructor(canvas) {
     super(canvas);
     canvas.style.backgroundColor = "#000300";
 
+    this.loadMask = debounce(this.loadMask, 100);
     window.addEventListener("keydown", this.handleKeyDown);
   }
 
@@ -62,7 +65,7 @@ export class DigitalRainAnimation extends Engine {
       [18, 16, 9],
       [12, 11, 6]
     ];
-    const [fontSize, glyphHeight, glyphWidth] = fontDefs[0];
+    const [fontSize, glyphHeight, glyphWidth] = fontDefs[2];
     const gap = fontSize / 12;
 
     this.rows = Math.floor(this.height / (glyphHeight + gap));
@@ -90,6 +93,24 @@ export class DigitalRainAnimation extends Engine {
         }
       }
     };
+
+    this.mask = undefined;
+    this.loadMask();
+  }
+
+  async loadMask() {
+    const imageSource = "/assets/images/matrix/1.jpg";
+    const g = this.grid;
+
+    this.mask = await createMaskFromImageSource(
+      imageSource,
+      this.columns,
+      this.rows,
+      g.glyph.width,
+      g.glyph.height,
+      g.glyph.spacing.horizontal,
+      g.glyph.spacing.vertical
+    );
   }
 
   initialize() {

@@ -102,30 +102,12 @@ export class Stream extends Entity {
 
       s.cellsRendered.add(cellKey);
 
-      // NOTE: This masks a circle.
-      // const cx = 26;
-      // const cy = 12;
-      // const radius = 6;
-      // const distance = Math.sqrt(
-      //   Math.pow(row - cy, 2) + Math.pow((this.column + 14) / 1.5 - cx, 2)
-      // );
-
-      // if (distance <= radius && distance >= radius - 1) {
-      //   continue;
-      // }
-
-      // NOTE: This masks a rectangle.
-      // if (
-      //   row === 5 ||
-      //   row === 19 ||
-      //   (row >= 5 && row <= 19 && (this.column === 10 || this.column === 42))
-      // ) {
-      //   continue;
-      // }
-
+      const isMasked = game.mask && game.mask[row][this.column] !== 1;
       const remainingLength = this.length - this.glyphs.length;
       const distanceToDestruction = remainingLength + i;
-      const opacity = distanceToDestruction / this.fadeDuration;
+      const opacity = isMasked
+        ? 0.2
+        : distanceToDestruction / this.fadeDuration;
       ctx.fillStyle = `rgba(0, 230, 0, ${opacity})`;
 
       if (i === len - 1) {
