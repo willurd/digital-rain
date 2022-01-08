@@ -176,17 +176,19 @@ const renderGridFromImageData = (
   cellWidth,
   cellHeight,
   cellSpacing,
-  horizontalMargin = cellSpacing,
-  verticalMargin = cellSpacing
+  cellHorizontalSpacing,
+  cellVerticalSpacing,
+  horizontalMargin = cellHorizontalSpacing,
+  verticalMargin = cellVerticalSpacing
 ) => {
   const { width: sourceWidth, height: sourceHeight } = imageData;
   const width =
     cellWidth * sourceWidth +
-    cellSpacing * (sourceWidth - 1) +
+    cellHorizontalSpacing * (sourceWidth - 1) +
     horizontalMargin * 2;
   const height =
     cellHeight * sourceHeight +
-    cellSpacing * (sourceHeight - 1) +
+    cellVerticalSpacing * (sourceHeight - 1) +
     verticalMargin * 2;
 
   canvas.width = width;
@@ -203,8 +205,8 @@ const renderGridFromImageData = (
       const b = imageData.data[i + 2];
       const a = imageData.data[i + 3] / 255;
       ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
-      const x = col * (cellWidth + cellSpacing) + horizontalMargin;
-      const y = row * (cellHeight + cellSpacing) + verticalMargin;
+      const x = col * (cellWidth + cellHorizontalSpacing) + horizontalMargin;
+      const y = row * (cellHeight + cellVerticalSpacing) + verticalMargin;
       ctx.fillRect(x, y, cellWidth, cellHeight);
     }
   }
@@ -215,19 +217,20 @@ const renderGridFromMask = (
   mask,
   cellWidth,
   cellHeight,
-  cellSpacing,
-  horizontalMargin = cellSpacing,
-  verticalMargin = cellSpacing
+  cellHorizontalSpacing,
+  cellVerticalSpacing,
+  horizontalMargin = cellHorizontalSpacing,
+  verticalMargin = cellVerticalSpacing
 ) => {
   const sourceHeight = mask.length;
   const sourceWidth = mask[0].length;
   const width =
     cellWidth * sourceWidth +
-    cellSpacing * (sourceWidth - 1) +
+    cellHorizontalSpacing * (sourceWidth - 1) +
     horizontalMargin * 2;
   const height =
     cellHeight * sourceHeight +
-    cellSpacing * (sourceHeight - 1) +
+    cellVerticalSpacing * (sourceHeight - 1) +
     verticalMargin * 2;
 
   canvas.width = width;
@@ -245,8 +248,8 @@ const renderGridFromMask = (
         continue;
       }
 
-      const x = col * (cellWidth + cellSpacing) + horizontalMargin;
-      const y = row * (cellHeight + cellSpacing) + verticalMargin;
+      const x = col * (cellWidth + cellHorizontalSpacing) + horizontalMargin;
+      const y = row * (cellHeight + cellVerticalSpacing) + verticalMargin;
       ctx.fillRect(x, y, cellWidth, cellHeight);
     }
   }
@@ -282,18 +285,21 @@ export const ImageProcessorSpike = () => {
     const columns = 150;
     const cellWidth = 3;
     const cellHeight = 5;
-    const cellSpacing = 2;
+    const cellHorizontalSpacing = 2;
+    const cellVerticalSpacing = 2;
 
     const imageSource = "/assets/images/matrix/1.jpg";
 
     const horizontalStretchFactor =
       cellWidth < cellHeight
-        ? (cellHeight + cellSpacing) / (cellWidth + cellSpacing)
+        ? (cellHeight + cellVerticalSpacing) /
+          (cellWidth + cellHorizontalSpacing)
         : 1;
 
     const verticalStretchFactor =
       cellHeight < cellWidth
-        ? (cellWidth + cellSpacing) / (cellHeight + cellSpacing)
+        ? (cellWidth + cellHorizontalSpacing) /
+          (cellHeight + cellVerticalSpacing)
         : 1;
 
     const img = new Image();
@@ -338,7 +344,8 @@ export const ImageProcessorSpike = () => {
         mask,
         cellWidth,
         cellHeight,
-        cellSpacing
+        cellHorizontalSpacing,
+        cellVerticalSpacing
       );
     };
 
