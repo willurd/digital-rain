@@ -149,6 +149,27 @@ const stretchImageData = (imageData, widthFactor, heightFactor) => {
   return ctx.getImageData(0, 0, width, height);
 };
 
+const createMaskFromImageData = (imageData) => {
+  const mask = [];
+  const { width: sourceWidth, height: sourceHeight } = imageData;
+
+  for (let row = 0; row < sourceHeight; row++) {
+    mask[row] = [];
+
+    for (let col = 0; col < sourceWidth; col++) {
+      const i = (row * sourceWidth + col) * 4;
+      const r = imageData.data[i];
+      const g = imageData.data[i + 1];
+      const b = imageData.data[i + 2];
+      const a = imageData.data[i + 3] / 255;
+      const filled = r * g * b * a !== 0;
+      mask[row][col] = filled ? 1 : 0;
+    }
+  }
+
+  return mask;
+};
+
 const renderGridFromImageData = (
   canvas,
   imageData,
@@ -171,8 +192,6 @@ const renderGridFromImageData = (
   canvas.width = width;
   canvas.height = height;
 
-  console.log({ sourceWidth, sourceHeight, width, height });
-
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, width, height);
 
@@ -191,35 +210,91 @@ const renderGridFromImageData = (
   }
 };
 
+const renderGridFromMask = (
+  canvas,
+  mask,
+  cellWidth,
+  cellHeight,
+  cellSpacing,
+  horizontalMargin = cellSpacing,
+  verticalMargin = cellSpacing
+) => {
+  const sourceHeight = mask.length;
+  const sourceWidth = mask[0].length;
+  const width =
+    cellWidth * sourceWidth +
+    cellSpacing * (sourceWidth - 1) +
+    horizontalMargin * 2;
+  const height =
+    cellHeight * sourceHeight +
+    cellSpacing * (sourceHeight - 1) +
+    verticalMargin * 2;
+
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "white";
+
+  for (let row = 0; row < sourceHeight; row++) {
+    for (let col = 0; col < sourceWidth; col++) {
+      const cellMask = mask[row][col];
+
+      if (!cellMask) {
+        continue;
+      }
+
+      const x = col * (cellWidth + cellSpacing) + horizontalMargin;
+      const y = row * (cellHeight + cellSpacing) + verticalMargin;
+      ctx.fillRect(x, y, cellWidth, cellHeight);
+    }
+  }
+};
+
 export const ImageProcessorSpike = () => {
+  const canvas0Ref = useRef();
   const canvas1Ref = useRef();
   const canvas2Ref = useRef();
   const canvas3Ref = useRef();
   const canvas4Ref = useRef();
   const canvas5Ref = useRef();
-
-  const rows = 48;
-  const columns = 100;
-  const cellWidth = 4;
-  const cellHeight = 7;
-  const cellSpacing = 2;
-
-  const imageSource = "/assets/images/matrix/1.jpg";
+  const canvas6Ref = useRef();
 
   useEffect(() => {
     if (
       !(
+        canvas0Ref.current &&
         canvas1Ref.current &&
         canvas2Ref.current &&
         canvas3Ref.current &&
         canvas4Ref.current &&
-        canvas5Ref.current
+        canvas5Ref.current &&
+        canvas6Ref.current
       )
     ) {
       return;
     }
 
     let cancelled = false;
+
+    const rows = 75;
+    const columns = 150;
+    const cellWidth = 3;
+    const cellHeight = 5;
+    const cellSpacing = 2;
+
+    const imageSource = "/assets/images/matrix/1.jpg";
+
+    const horizontalStretchFactor =
+      cellWidth < cellHeight
+        ? (cellHeight + cellSpacing) / (cellWidth + cellSpacing)
+        : 1;
+
+    const verticalStretchFactor =
+      cellHeight < cellWidth
+        ? (cellWidth + cellSpacing) / (cellHeight + cellSpacing)
+        : 1;
 
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -238,8 +313,8 @@ export const ImageProcessorSpike = () => {
 
       const stretchedImageData = stretchImageData(
         luminanceFilteredImageData,
-        cellWidth < cellHeight ? cellHeight / cellWidth : 1,
-        cellHeight < cellWidth ? cellWidth / cellHeight : 1
+        horizontalStretchFactor,
+        verticalStretchFactor
       );
 
       const resizedImageData = filterImageData(
@@ -248,13 +323,19 @@ export const ImageProcessorSpike = () => {
       );
 
       renderToCanvas(canvas1Ref.current, originalImageData);
+
+      renderToCanvas(canvas0Ref.current, luminanceFilteredImageData);
       renderToCanvas(canvas2Ref.current, luminanceFilteredImageData);
+
       renderToCanvas(canvas3Ref.current, stretchedImageData);
+
       renderToCanvas(canvas4Ref.current, resizedImageData);
 
-      renderGridFromImageData(
-        canvas5Ref.current,
-        resizedImageData,
+      const mask = createMaskFromImageData(resizedImageData);
+      renderGridFromMask(canvas5Ref.current, mask, cellWidth, cellHeight, 0);
+      renderGridFromMask(
+        canvas6Ref.current,
+        mask,
         cellWidth,
         cellHeight,
         cellSpacing
@@ -264,13 +345,34 @@ export const ImageProcessorSpike = () => {
     return () => {
       cancelled = true;
     };
-  }, [canvas1Ref, canvas2Ref, canvas3Ref, canvas4Ref]);
+  }, [
+    canvas0Ref,
+    canvas1Ref,
+    canvas2Ref,
+    canvas3Ref,
+    canvas4Ref,
+    canvas5Ref,
+    canvas6Ref
+  ]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 30 }}>
-      <div>
-        <h3>Grid Mask (Final Step)</h3>
-        <canvas ref={canvas5Ref} />
+      <div style={{ display: "flex", gap: 50 }}>
+        <div>
+          <div>
+            <h3>Grid Mask with spacing (Final Step)</h3>
+            <canvas ref={canvas6Ref} />
+          </div>
+
+          <div>
+            <h3>Grid Mask no spacing (Final Step)</h3>
+            <canvas ref={canvas5Ref} />
+          </div>
+        </div>
+
+        <div>
+          <canvas ref={canvas0Ref} />
+        </div>
       </div>
 
       <div>
