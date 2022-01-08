@@ -134,6 +134,21 @@ const resizeImageData = (imageData, width, height) => {
   return ctx.getImageData(0, 0, width, height);
 };
 
+const stretchImageData = (imageData, widthFactor, heightFactor) => {
+  const intermediateCanvas = document.createElement("canvas");
+  renderToCanvas(intermediateCanvas, imageData);
+
+  const width = imageData.width * widthFactor;
+  const height = imageData.height * heightFactor;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(intermediateCanvas, 0, 0, width, height);
+  return ctx.getImageData(0, 0, width, height);
+};
+
 const renderGridFromImageData = (
   canvas,
   imageData,
@@ -181,11 +196,12 @@ export const ImageProcessorSpike = () => {
   const canvas2Ref = useRef();
   const canvas3Ref = useRef();
   const canvas4Ref = useRef();
+  const canvas5Ref = useRef();
 
-  const rows = 24;
-  const columns = 52;
-  const cellWidth = 8;
-  const cellHeight = 13;
+  const rows = 48;
+  const columns = 100;
+  const cellWidth = 4;
+  const cellHeight = 7;
   const cellSpacing = 2;
 
   const imageSource = "/assets/images/matrix/1.jpg";
@@ -196,7 +212,8 @@ export const ImageProcessorSpike = () => {
         canvas1Ref.current &&
         canvas2Ref.current &&
         canvas3Ref.current &&
-        canvas4Ref.current
+        canvas4Ref.current &&
+        canvas5Ref.current
       )
     ) {
       return;
@@ -213,22 +230,30 @@ export const ImageProcessorSpike = () => {
       }
 
       const originalImageData = imageToImageData(img);
+
       const luminanceFilteredImageData = filterImageData(
         originalImageData,
         luminanceFilter
       );
-      const resizedImageData = resizeImageData(
+
+      const stretchedImageData = stretchImageData(
         luminanceFilteredImageData,
-        columns,
-        rows
+        cellWidth < cellHeight ? cellHeight / cellWidth : 1,
+        cellHeight < cellWidth ? cellWidth / cellHeight : 1
+      );
+
+      const resizedImageData = filterImageData(
+        resizeImageData(stretchedImageData, columns, rows),
+        luminanceFilter
       );
 
       renderToCanvas(canvas1Ref.current, originalImageData);
       renderToCanvas(canvas2Ref.current, luminanceFilteredImageData);
-      renderToCanvas(canvas3Ref.current, resizedImageData);
+      renderToCanvas(canvas3Ref.current, stretchedImageData);
+      renderToCanvas(canvas4Ref.current, resizedImageData);
 
       renderGridFromImageData(
-        canvas4Ref.current,
+        canvas5Ref.current,
         resizedImageData,
         cellWidth,
         cellHeight,
@@ -244,18 +269,27 @@ export const ImageProcessorSpike = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 30 }}>
       <div>
+        <h3>Grid Mask (Final Step)</h3>
+        <canvas ref={canvas5Ref} />
+      </div>
+
+      <div>
+        <h3>Resized (Step 4)</h3>
         <canvas ref={canvas4Ref} />
       </div>
 
       <div>
+        <h3>Stretched (Step 3)</h3>
         <canvas ref={canvas3Ref} />
       </div>
 
       <div>
+        <h3>Luminance Filtered (Step 2)</h3>
         <canvas ref={canvas2Ref} />
       </div>
 
       <div>
+        <h3>Original (Step 1)</h3>
         <canvas ref={canvas1Ref} />
       </div>
     </div>
