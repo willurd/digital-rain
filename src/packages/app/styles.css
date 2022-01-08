@@ -7,8 +7,8 @@
 body {
   background: black;
   color: #00ff41;
-  font-family: "matrix-code-nfi";
+  /* font-family: "matrix-code-nfi"; */
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  /* overflow: hidden; */
 }

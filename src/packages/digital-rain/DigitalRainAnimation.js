@@ -57,10 +57,13 @@ export class DigitalRainAnimation extends Engine {
   };
 
   onWindowResize() {
-    const gap = 2;
-    const fontSize = 24;
-    const glyphHeight = 22;
-    const glyphWidth = 13;
+    const fontDefs = [
+      [24, 22, 12],
+      [18, 16, 9],
+      [12, 11, 6]
+    ];
+    const [fontSize, glyphHeight, glyphWidth] = fontDefs[0];
+    const gap = fontSize / 12;
 
     this.rows = Math.floor(this.height / (glyphHeight + gap));
     this.columns = Math.floor(this.width / (glyphWidth + gap));
@@ -75,11 +78,11 @@ export class DigitalRainAnimation extends Engine {
       },
       glyph: {
         fontSize,
-        width: 13,
-        height: 22,
+        width: glyphWidth,
+        height: glyphHeight,
         cellOffset: {
-          horizontal: 0,
-          vertical: fontSize / 1.3
+          horizontal: glyphWidth / 2,
+          vertical: glyphHeight / 1.3
         },
         spacing: {
           horizontal: gap,

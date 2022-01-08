@@ -12,7 +12,7 @@ export class Stream extends Entity {
     super();
     this.column = column;
     this.glyphs = [];
-    this.newGlyphsPerSecond = 10;
+    this.newGlyphsPerSecond = 10; // random.int(4, 12);
     this.timeBetweenGlyphs = 1000 / this.newGlyphsPerSecond;
     this.startingRow = 0;
     this.maxStartingRow = game.rows + 1;
@@ -84,7 +84,7 @@ export class Stream extends Entity {
     ctx.shadowColor = "#00ff00";
     ctx.shadowBlur = 14;
 
-    ctx.textAlign = "left";
+    ctx.textAlign = "center";
     ctx.textBaseline = "center";
 
     for (let i = 0, len = this.glyphs.length; i < len; i++) {
@@ -135,9 +135,11 @@ export class Stream extends Entity {
       }
 
       const x =
-        this.column * 15 + g.margin.horizontal + g.glyph.cellOffset.horizontal;
+        this.column * (g.glyph.width + g.glyph.spacing.horizontal) +
+        g.margin.horizontal +
+        g.glyph.cellOffset.horizontal;
       const y =
-        g.glyph.fontSize * row +
+        row * (g.glyph.height + g.glyph.spacing.vertical) +
         g.margin.vertical +
         g.glyph.cellOffset.vertical;
       ctx.fillText(this.glyphs[i], x, y);
