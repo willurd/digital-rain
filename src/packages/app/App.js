@@ -5,8 +5,8 @@ import "./styles.css";
 export default function App() {
   return (
     <div>
-      {/* <DigitalRainCanvas /> */}
-      <ImageProcessorSpike />
+      <DigitalRainCanvas />
+      {/* <ImageProcessorSpike /> */}
     </div>
   );
 }

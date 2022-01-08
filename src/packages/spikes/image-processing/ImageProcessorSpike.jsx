@@ -312,28 +312,31 @@ export const ImageProcessorSpike = () => {
 
       const originalImageData = imageToImageData(img);
 
-      const luminanceFilteredImageData = filterImageData(
-        originalImageData,
-        luminanceFilter
-      );
-
       const stretchedImageData = stretchImageData(
-        luminanceFilteredImageData,
+        originalImageData,
         horizontalStretchFactor,
         verticalStretchFactor
       );
 
-      const resizedImageData = filterImageData(
-        resizeImageData(stretchedImageData, columns, rows),
+      const luminanceFilteredImageData = filterImageData(
+        stretchedImageData,
         luminanceFilter
       );
 
+      const reapplyLuminanceFilter = true;
+      const resizedImageData = reapplyLuminanceFilter
+        ? filterImageData(
+            resizeImageData(luminanceFilteredImageData, columns, rows),
+            luminanceFilter
+          )
+        : resizeImageData(luminanceFilteredImageData, columns, rows);
+
       renderToCanvas(canvas1Ref.current, originalImageData);
+      renderToCanvas(canvas0Ref.current, originalImageData);
 
-      renderToCanvas(canvas0Ref.current, luminanceFilteredImageData);
-      renderToCanvas(canvas2Ref.current, luminanceFilteredImageData);
+      renderToCanvas(canvas2Ref.current, stretchedImageData);
 
-      renderToCanvas(canvas3Ref.current, stretchedImageData);
+      renderToCanvas(canvas3Ref.current, luminanceFilteredImageData);
 
       renderToCanvas(canvas4Ref.current, resizedImageData);
 
