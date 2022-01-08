@@ -27,27 +27,23 @@ export class Stream extends Entity {
     this.swapperConfigs = new Map();
   }
 
-  update(delta, game) {
-    super.update(delta, game);
-
-    this.timeUntilNextGlyph -= delta;
-
-    // TODO: This could be more performant. Right now it's O(mn)
+  updateHotSwappableGlyphs(delta) {
     for (const config of this.swapperConfigs.values()) {
       config.delay -= delta;
 
       if (config.delay <= 0) {
         config.delay = createSwapperDelay();
+        const index = config.row - this.startingRow;
 
-        for (let i = 0; i < this.glyphs.length; i++) {
-          const row = this.startingRow + i;
-
-          if (row === config.row) {
-            this.glyphs[i] = choose(Glyphs);
-          }
+        if (index >= 0 && index < this.glyphs.length) {
+          this.glyphs[index] = choose(Glyphs);
         }
       }
     }
+  }
+
+  updateNewGlyphs(delta) {
+    this.timeUntilNextGlyph -= delta;
 
     if (this.timeUntilNextGlyph <= 0) {
       this.timeUntilNextGlyph = this.timeBetweenGlyphs;
@@ -72,6 +68,12 @@ export class Stream extends Entity {
         }
       }
     }
+  }
+
+  update(delta, game) {
+    super.update(delta, game);
+    this.updateHotSwappableGlyphs(delta);
+    this.updateNewGlyphs(delta);
   }
 
   render(ctx, game) {
@@ -105,9 +107,14 @@ export class Stream extends Entity {
       const isMasked = game.mask && game.mask[row][this.column] !== 1;
       const remainingLength = this.length - this.glyphs.length;
       const distanceToDestruction = remainingLength + i;
+      const maxOpacity = distanceToDestruction / this.fadeDuration;
       const opacity = isMasked
-        ? 0.2
-        : distanceToDestruction / this.fadeDuration;
+        ? Math.min(
+            0.2,
+            // s.maskMaxOpacity,
+            maxOpacity
+          )
+        : maxOpacity;
       ctx.fillStyle = `rgba(0, 230, 0, ${opacity})`;
 
       if (i === len - 1) {

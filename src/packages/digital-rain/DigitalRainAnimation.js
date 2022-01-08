@@ -4,6 +4,15 @@ import Stream from "./Stream";
 import { createMaskFromImageSource } from "../image-processing/mask";
 import { debounce } from "lodash";
 
+const math$sqrt = Math.sqrt;
+const math$pow = Math.pow;
+
+const easeInOutCirc = (x) => {
+  return x < 0.5
+    ? (1 - math$sqrt(1 - math$pow(2 * x, 2))) / 2
+    : (math$sqrt(1 - math$pow(-2 * x + 2, 2)) + 1) / 2;
+};
+
 export class DigitalRainAnimation extends Engine {
   constructor(canvas) {
     super(canvas);
@@ -65,7 +74,7 @@ export class DigitalRainAnimation extends Engine {
       [18, 16, 9],
       [12, 11, 6]
     ];
-    const [fontSize, glyphHeight, glyphWidth] = fontDefs[2];
+    const [fontSize, glyphHeight, glyphWidth] = fontDefs[1];
     const gap = fontSize / 12;
 
     this.rows = Math.floor(this.height / (glyphHeight + gap));
@@ -123,6 +132,12 @@ export class DigitalRainAnimation extends Engine {
     s.slowMotionFactor = 5;
     s.density = 0.3;
     s.streams = [];
+    s.maskMaxOpacity = 0;
+    s.maskMaxOpacityProgress = 0;
+    s.maskMaxOpacityDirection = 1;
+    s.maskMaxOpacityDuration = 2000;
+    s.maskMaxOpacityMinimum = 0.1;
+    s.maskMaxOpacityMaxiumum = 0.8;
   }
 
   update(delta) {
@@ -169,6 +184,24 @@ export class DigitalRainAnimation extends Engine {
     }
 
     s.streams.forEach((s) => s.update(delta, this));
+
+    // s.maskMaxOpacityProgress +=
+    //   (s.maskMaxOpacityDirection * delta) / s.maskMaxOpacityDuration;
+    // s.maskMaxOpacity = easeInOutCirc(s.maskMaxOpacityProgress);
+
+    // if (s.maskMaxOpacity >= s.maskMaxOpacityMaximum) {
+    //   s.maskMaxOpacityProgress = 1;
+    //   s.maskMaxOpacityDirection = -1;
+    //   s.maskMaxOpacityDuration = 10000;
+    //   s.maskMaxOpacity = easeInOutCirc(s.maskMaxOpacityProgress);
+    // } else if (s.maskMaxOpacity <= s.maskMaxOpacityMinimum) {
+    //   s.maskMaxOpacityProgress = 0;
+    //   s.maskMaxOpacityDirection = 1;
+    //   s.maskMaxOpacityDuration = 2000;
+    //   s.maskMaxOpacity = easeInOutCirc(s.maskMaxOpacityProgress);
+    // }
+
+    // console.log(s.maskMaxOpacity);
   }
 
   // ctx.measureText

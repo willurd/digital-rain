@@ -20,14 +20,6 @@ import {
 // No
 // https://i.imgur.com/cZdnmz3.jpeg (728x451)
 
-// const imageSource = "/assets/images/matrix/1.jpg";
-// const maskWidth = 75;
-// const maskHeight = 150;
-// const cellWidth = 3;
-// const cellHeight = 5;
-// const cellHorizontalSpacing = 2;
-// const cellVerticalSpacing = 2;
-
 export const createMaskFromImageSource = async (
   imageSource,
   maskWidth,
