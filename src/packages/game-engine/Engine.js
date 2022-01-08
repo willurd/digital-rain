@@ -1,9 +1,12 @@
+import { debounce } from "lodash";
+
 export class Engine {
   constructor(canvas) {
     this.canvas = canvas;
     this.gameState = {};
-    window.addEventListener("resize", this.handleWindowResize);
     this.handleWindowResize();
+    this.handleWindowResize = debounce(this.handleWindowResize, 100);
+    window.addEventListener("resize", this.handleWindowResize);
   }
 
   destroy() {

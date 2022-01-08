@@ -103,7 +103,6 @@ export class DigitalRainAnimation extends Engine {
       }
     };
 
-    this.mask = undefined;
     this.loadMask();
   }
 
